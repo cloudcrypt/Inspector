@@ -11,27 +11,29 @@ public class Inspector {
         System.out.printf("Class: %s\n", cls.getName());
         System.out.printf("Immediate Superclass: %s\n", cls.getSuperclass().getName());
         System.out.printf("Implemented Interfaces: \n");
-        Class[] interfaces = cls.getInterfaces();
-        if (interfaces.length > 0) {
-            Arrays.stream(interfaces).forEach(c -> System.out.printf("\t%s\n", c.getName()));
-        } else {
-            System.out.printf("\tNone\n");
-        }
+        print(cls.getInterfaces(), 1);
         System.out.printf("Declared Methods: \n");
         Method[] methods = cls.getDeclaredMethods();
         if (methods.length > 0) {
             Arrays.stream(methods).forEach(m -> {
                 System.out.printf("\tMethod: %s\n", m.getName());
                 System.out.printf("\t\tExceptions Thrown: \n");
-                Class[] exceptions = m.getExceptionTypes();
-                if (exceptions.length > 0) {
-                    Arrays.stream(exceptions).forEach(e -> System.out.printf("\t\t\t%s\n", e.getName()));
-                } else {
-                    System.out.printf("\t\t\tNone\n");
-                }
+                print(m.getExceptionTypes(), 3);
             });
         } else {
             System.out.println("\tNone\n");
+        }
+    }
+
+    private void print(Class[] list, int indentLevel) {
+        StringBuilder indentStringBuilder = new StringBuilder();
+        for (int i = 0; i < indentLevel; i++) {
+            indentStringBuilder.append('\t');
+        }
+        if (list.length > 0) {
+            Arrays.stream(list).forEach(c -> System.out.printf("%s%s\n", indentStringBuilder.toString(), c.getName()));
+        } else {
+            System.out.printf("%sNone\n", indentStringBuilder.toString());
         }
     }
 
