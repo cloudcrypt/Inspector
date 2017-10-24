@@ -26,7 +26,8 @@ public class InspectorTest {
                 "Method: toString",
                 "Method: setVal",
                 "Method: getVal",
-                "Method: printSomething"
+                "Method: printSomething",
+                "java.lang.Exception"
         };
         Arrays.stream(outputValues).forEach(s -> assertTrue(outStream.toString().contains(s)));
     }
