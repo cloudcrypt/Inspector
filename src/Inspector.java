@@ -8,37 +8,47 @@ public class Inspector {
     public Inspector() { }
 
     public void inspect(Object obj, boolean recursive) {
-        System.out.printf("%sInspecting object: %s\n\n", getIndentStr(), obj.toString());
+        print("Inspecting object: %s\n", obj.toString());
         Class cls = obj.getClass();
-        System.out.printf("%sClass: %s\n", getIndentStr(), cls.getName());
-        System.out.printf("%sImmediate Superclass: %s\n", getIndentStr(), cls.getSuperclass().getName());
-        System.out.printf("%sImplemented Interfaces: \n", getIndentStr());
+        print("Class: %s", cls.getName());
+        print("Immediate Superclass: %s", cls.getSuperclass().getName());
+        print("Implemented Interfaces: ");
         indentLevel++;
         printNames(cls.getInterfaces());
         indentLevel--;
-        System.out.printf("%sDeclared Methods: \n", getIndentStr());
+        print("Declared Methods: ");
         Method[] methods = cls.getDeclaredMethods();
         indentLevel++;
         if (methods.length > 0) {
             Arrays.stream(methods).forEach(m -> {
-                System.out.printf("%sMethod: %s\n", getIndentStr(), m.getName());
-                System.out.printf("%sExceptions Thrown: \n", getIndentStr(indentLevel+1));
+                print("Method: %s", m.getName());
+                printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
                 indentLevel += 2;
                 printNames(m.getExceptionTypes());
                 indentLevel -= 2;
             });
         } else {
-            System.out.printf("%sNone\n", getIndentStr());
+            print("None");
         }
         indentLevel--;
     }
 
     private void printNames(Class[] list) {
         if (list.length > 0) {
-            Arrays.stream(list).forEach(c -> System.out.printf("%s%s\n", getIndentStr(), c.getName()));
+            Arrays.stream(list).forEach(c -> print(c.getName()));
         } else {
-            System.out.printf("%sNone\n", getIndentStr());
+            print("None");
         }
+    }
+
+    private void print(String format, Object ... args) {
+        System.out.print(getIndentStr());
+        System.out.printf(format + "\n", args);
+    }
+
+    private void printSpecificIndent(String format, int indentLevel, Object ... args) {
+        System.out.print(getIndentStr(indentLevel));
+        System.out.printf(format + "\n", args);
     }
 
     private String getIndentStr() {
