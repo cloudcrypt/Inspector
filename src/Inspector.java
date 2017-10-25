@@ -19,7 +19,7 @@ public class Inspector {
         print("Declared Methods: ");
         Method[] methods = cls.getDeclaredMethods();
         indentLevel++;
-        if (methods.length > 0) {
+        if (!isEmpty(methods)) {
             Arrays.stream(methods).forEach(m -> {
                 print("Method: %s", m.getName());
                 printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
@@ -27,18 +27,20 @@ public class Inspector {
                 printNames(m.getExceptionTypes());
                 indentLevel -= 2;
             });
-        } else {
-            print("None");
         }
         indentLevel--;
     }
 
     private void printNames(Class[] list) {
-        if (list.length > 0) {
+        if (!isEmpty(list)) {
             Arrays.stream(list).forEach(c -> print(c.getName()));
-        } else {
-            print("None");
         }
+    }
+
+    private <T> boolean isEmpty(T[] list) {
+        boolean empty = list.length == 0;
+        if (empty) print("None");
+        return empty;
     }
 
     private void print(String format, Object ... args) {
