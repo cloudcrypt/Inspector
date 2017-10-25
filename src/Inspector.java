@@ -41,20 +41,19 @@ public class Inspector {
         }
     }
 
+    private String getIndentStr() {
+        return createIndentStr(indentLevel);
+    }
+
     private String getIndentStr(int n) {
+        return createIndentStr(n);
+    }
+
+    private String createIndentStr(int n) {
         StringBuilder indentStringBuilder = new StringBuilder();
         for (int i = 0; i < n; i++) {
             indentStringBuilder.append('\t');
         }
         return indentStringBuilder.toString();
     }
-
-    private String getIndentStr() {
-        StringBuilder indentStringBuilder = new StringBuilder();
-        for (int i = 0; i < indentLevel; i++) {
-            indentStringBuilder.append('\t');
-        }
-        return indentStringBuilder.toString();
-    }
-
 }
