@@ -1,4 +1,5 @@
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -10,7 +11,7 @@ public class Inspector {
     public Inspector() { }
 
     public void inspect(Object obj, boolean recursive) {
-        print("Inspecting object: %s\n", obj.toString());
+        print("Inspecting object: %s %s\n", obj.toString(), System.identityHashCode(obj));
         Class cls = obj.getClass();
         print("Class: %s", cls.getName());
         print("Immediate Superclass: %s", cls.getSuperclass().getName());
@@ -55,9 +56,35 @@ public class Inspector {
         }
         indentLevel--;
         print("Declared Fields:");
+        Field[] fields = cls.getDeclaredFields();
         indentLevel++;
+        if (!isEmpty(fields)) {
+            Arrays.stream(fields).forEach(f -> {
+                print("Field: %s", f.getName());
+                printSpecificIndent("Type:", indentLevel+1);
+                printSpecificIndent(f.getType().getName(), indentLevel+2);
+                printSpecificIndent("Modifiers:", indentLevel+1);
+                printSpecificIndent(Modifier.toString(f.getModifiers()), indentLevel+2);
+                printSpecificIndent("Value:", indentLevel+1);
+                f.setAccessible(true);
+                try {
+                    Object value = f.get(obj);
+                    if (value == null) {
+                        printSpecificIndent("null", indentLevel+2);
+                    } else if (f.getType().isPrimitive()) {
+                        printSpecificIndent(value.toString(), indentLevel+2);
+                    } else {
+                        if (recursive) {
 
+                        }
+                        printSpecificIndent("Reference Value: %s %s", indentLevel+2, value.toString(), System.identityHashCode(value));
+                    }
+                } catch (IllegalAccessException e) { }
+            });
+        }
         indentLevel--;
+        //print("Inherited Constructors:");
+
     }
 
     private void printNames(Class[] list) {
