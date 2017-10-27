@@ -13,4 +13,5 @@ public class ClassD
     private static ClassA val2;
     private int val3=34;
     private ClassA[] vallarray = new ClassA[10];
+    private int[] test = new int[] {1,2,3,4,5,6,7};
 }
