@@ -1,6 +1,8 @@
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Inspector {
 
@@ -102,7 +104,8 @@ public class Inspector {
                 inheritedInterfaces.add(i);
                 superInterfaces.addAll(Arrays.asList(i.getInterfaces()));
             }
-            indentAndExecute(1, () -> printNames(inheritedInterfaces.toArray(new Class[0])));;
+            HashSet<Class> uniqueInheritedInterfaces = new HashSet<>(inheritedInterfaces);
+            indentAndExecute(1, () -> printNames(uniqueInheritedInterfaces.toArray(new Class[0])));;
             System.out.println("---------------------------------------\n");
         }
     }
