@@ -17,6 +17,7 @@ public class Inspector {
     }
 
     public void inspect(Object obj, boolean recursive) {
+        System.out.println("---------------------------------------");
         this.recursive = recursive;
         queue.add(obj);
         //while blah blah
@@ -27,9 +28,7 @@ public class Inspector {
         print("Class: %s", cls.getName());
         print("Immediate Superclass: %s", cls.getSuperclass().getName());
         print("Implemented Interfaces: ");
-        indentLevel++;
-        printNames(cls.getInterfaces());
-        indentLevel--;
+        indentAndExecute(1, () -> printNames(cls.getInterfaces()));
         print("Declared Constructors:");
         Constructor[] constructors = cls.getDeclaredConstructors();
         indentLevel++;
@@ -63,6 +62,31 @@ public class Inspector {
             inheritedConstructors.forEach(this::printConstructor);
         }
         indentLevel--;
+        print("Inherited Methods:");
+        ArrayList<Method> inheritedMethods = new ArrayList<>();
+        superClass = cls.getSuperclass();
+        while (superClass != null) {
+            inheritedMethods.addAll(Arrays.asList(superClass.getDeclaredMethods()));
+            superClass = superClass.getSuperclass();
+        }
+        indentLevel++;
+        if (!isEmpty(inheritedMethods)) {
+            inheritedMethods.forEach(this::printMethod);
+        }
+        indentLevel--;
+        print("Inherited Fields:");
+        ArrayList<Field> inheritedFields = new ArrayList<>();
+        superClass = cls.getSuperclass();
+        while (superClass != null) {
+            inheritedFields.addAll(Arrays.asList(superClass.getDeclaredFields()));
+            superClass = superClass.getSuperclass();
+        }
+        indentLevel++;
+        if (!isEmpty(inheritedFields)) {
+            inheritedFields.forEach(this::printField);
+        }
+        indentLevel--;
+        System.out.println("---------------------------------------\n");
         // now do same inheritance for methods, and then fields
         // is there a ned to traverse interface inheritance hierarchy???
     }
@@ -76,7 +100,7 @@ public class Inspector {
     }
 
     private void printMethod(Method m) {
-        print("Method: %s", m.getName());
+        print("Method: %s, Declared in %s", m.getName(), m.getDeclaringClass().getName());
         printSpecificIndent("Modifiers: ", indentLevel+1);
         printSpecificIndent(Modifier.toString(m.getModifiers()), indentLevel+2);
         printSpecificIndent("Return Type: ", indentLevel+1);
@@ -88,7 +112,7 @@ public class Inspector {
     }
 
     private void printField(Field f) {
-        print("Field: %s", f.getName());
+        print("Field: %s, Declared in %s", f.getName(), f.getDeclaringClass().getName());
         printSpecificIndent("Modifiers:", indentLevel+1);
         printSpecificIndent(Modifier.toString(f.getModifiers()), indentLevel+2);
         printSpecificIndent("Type:", indentLevel+1);
