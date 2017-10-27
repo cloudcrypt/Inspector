@@ -1,9 +1,20 @@
+/*
+ *  
+ *  
+ * Daniel Dastoor
+ *  
+ */
+
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 
+/**
+ * The Inspector class implements a reflective object inspector that does a complete introspection
+ * of an object at runtime.
+ * @author Daniel Dastoor
+ */
 public class Inspector {
 
     private int indentLevel = 0;
@@ -14,10 +25,19 @@ public class Inspector {
 
     private boolean recursive;
 
+    /**
+     * Default constructor to initialize queue
+     */
     public Inspector() {
         queue = new ArrayList<>();
     }
 
+    /**
+     * Performs the reflective introspection on an object, printing
+     * the result to standard output
+     * @param obj Object to perform introspection on
+     * @param recursive boolean value to toggle recursive introspection
+     */
     public void inspect(Object obj, boolean recursive) {
         System.out.println("---------------------------------------");
         this.recursive = recursive;
