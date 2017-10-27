@@ -15,6 +15,10 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+/**
+ * Set of unit tests to verify the output of the Inspector.
+ * @author Daniel Dastoor
+ */
 public class InspectorTest {
     @Test
     public void testClassA() {

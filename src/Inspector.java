@@ -42,14 +42,27 @@ public class Inspector {
         System.out.println("---------------------------------------");
         this.recursive = recursive;
         queue.add(obj);
+        /*
+         * Utilizes an ArrayList as a queue, to keep track of remaining objects
+         * that need introspection.
+         * To begin, removes first object, and performs introspection.
+         */
         while (!queue.isEmpty()) {
             this.obj = queue.remove(0);
+            /*
+             * Inspects information about the object, wrapped between increments
+             * and decrements of the indentLevel, to set the appropriate amount
+             * of indenting in the output.
+             */
             Class cls = this.obj.getClass();
             print("Inspecting object: %s %s\n", cls.getName(), System.identityHashCode(this.obj));
+
             print("Class: %s", cls.getName());
             print("Immediate Superclass: %s", cls.getSuperclass().getName());
+
             print("Implemented Interfaces: ");
             indentAndExecute(1, () -> printNames(cls.getInterfaces()));
+
             print("Declared Constructors:");
             Constructor[] constructors = cls.getDeclaredConstructors();
             indentLevel++;
@@ -57,6 +70,7 @@ public class Inspector {
                 Arrays.stream(constructors).forEach(this::printConstructor);
             }
             indentLevel--;
+
             print("Declared Methods: ");
             Method[] methods = cls.getDeclaredMethods();
             indentLevel++;
@@ -64,6 +78,7 @@ public class Inspector {
                 Arrays.stream(methods).forEach(this::printMethod);
             }
             indentLevel--;
+
             print("Declared Fields:");
             Field[] fields = cls.getDeclaredFields();
             indentLevel++;
@@ -71,6 +86,8 @@ public class Inspector {
                 Arrays.stream(fields).forEach(this::printField);
             }
             indentLevel--;
+
+            // Traverse the inheritance hierarchy to find all inherited constructors
             print("Inherited Constructors:");
             ArrayList<Constructor> inheritedConstructors = new ArrayList<>();
             Class superClass = cls.getSuperclass();
@@ -83,6 +100,8 @@ public class Inspector {
                 inheritedConstructors.forEach(this::printConstructor);
             }
             indentLevel--;
+
+            // Traverse the inheritance hierarchy to find all inherited methods
             print("Inherited Methods:");
             ArrayList<Method> inheritedMethods = new ArrayList<>();
             superClass = cls.getSuperclass();
@@ -95,6 +114,8 @@ public class Inspector {
                 inheritedMethods.forEach(this::printMethod);
             }
             indentLevel--;
+
+            // Traverse the inheritance hierarchy to find all inherited fields
             print("Inherited Fields:");
             ArrayList<Field> inheritedFields = new ArrayList<>();
             superClass = cls.getSuperclass();
@@ -107,6 +128,9 @@ public class Inspector {
                 inheritedFields.forEach(this::printField);
             }
             indentLevel--;
+
+            // Traverse the inheritance hierarchy of superclasses and superinterfaces
+            // to find all inherited interfaces
             print("Inherited Interfaces:");
             ArrayList<Class> inheritedInterfaces = new ArrayList<>();
             ArrayList<Class> superInterfaces = new ArrayList<>();
@@ -124,8 +148,10 @@ public class Inspector {
                 inheritedInterfaces.add(i);
                 superInterfaces.addAll(Arrays.asList(i.getInterfaces()));
             }
+            // Ensure list of inherited interfaces is unique to avoid duplicate listings
             HashSet<Class> uniqueInheritedInterfaces = new HashSet<>(inheritedInterfaces);
-            indentAndExecute(1, () -> printNames(uniqueInheritedInterfaces.toArray(new Class[0])));;
+            indentAndExecute(1, () -> printNames(uniqueInheritedInterfaces.toArray(new Class[0])));
+
             System.out.println("---------------------------------------\n");
         }
     }
@@ -136,8 +162,10 @@ public class Inspector {
      */
     private void printConstructor(Constructor c) {
         print("Constructor: %s", c.getName());
+
         printSpecificIndent("Modifiers:", indentLevel+1);
         printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+2);
+
         printSpecificIndent("Parameter Types:", indentLevel+1);
         indentAndExecute(2, () -> printNames(c.getParameterTypes()));
     }
@@ -148,12 +176,16 @@ public class Inspector {
      */
     private void printMethod(Method m) {
         print("Method: %s, Declared in %s", m.getName(), m.getDeclaringClass().getName());
+
         printSpecificIndent("Modifiers: ", indentLevel+1);
         printSpecificIndent(Modifier.toString(m.getModifiers()), indentLevel+2);
+
         printSpecificIndent("Return Type: ", indentLevel+1);
         indentAndExecute(2, () -> printType(m.getReturnType()));
+
         printSpecificIndent("Parameter Types: ", indentLevel+1);
         indentAndExecute(2, () -> printNames(m.getParameterTypes()));
+
         printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
         indentAndExecute(2, () -> printNames(m.getExceptionTypes()));
     }
@@ -164,8 +196,10 @@ public class Inspector {
      */
     private void printField(Field f) {
         print("Field: %s, Declared in %s", f.getName(), f.getDeclaringClass().getName());
+
         printSpecificIndent("Modifiers:", indentLevel+1);
         printSpecificIndent(Modifier.toString(f.getModifiers()), indentLevel+2);
+
         printSpecificIndent("Type:", indentLevel+1);
         if (!f.getType().isArray()) {
             printSpecificIndent(f.getType().getName(), indentLevel+2);
@@ -174,7 +208,9 @@ public class Inspector {
             printSpecificIndent("Component Type:", indentLevel+1);
             printSpecificIndent(f.getType().getComponentType().getName(), indentLevel+2);
         }
+
         printSpecificIndent("Value:", indentLevel+1);
+        // Set field to accessible in case it is not
         f.setAccessible(true);
         try {
             Object value = f.get(obj);
@@ -192,23 +228,33 @@ public class Inspector {
             return;
         }
         Class cls = value.getClass();
+
         if (isPrimitiveOrWrapper(cls)) {
+
             print(value.toString());
+
         } else if (cls.isArray()) {
+
             print("Length: %s", Array.getLength(value));
             print("Contents:");
             for (int i = 0; i < Array.getLength(value); i++) {
                 Object element = Array.get(value, i);
+
                 printSpecificIndent("Value:", indentLevel+1);
+                // Recursively call printObjectValue in case object is of reference or array type
                 indentAndExecute(2, () -> printObjectValue(element));
             }
+
         } else {
+
             print("Reference Value: %s %s", value.getClass().getName(), System.identityHashCode(value));
+            // If in recursive mode, add object to queue for future introspection
             if (recursive) {
                   if (!queue.contains(value)) {
                       queue.add(value);
                   }
             }
+
         }
     }
 
