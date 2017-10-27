@@ -29,15 +29,7 @@ public class Inspector {
         Constructor[] constructors = cls.getDeclaredConstructors();
         indentLevel++;
         if (!isEmpty(constructors)) {
-            Arrays.stream(constructors).forEach(c -> {
-                printSpecificIndent("Constructor: %s", indentLevel+1, c.getName());
-                printSpecificIndent("Modifiers:", indentLevel+2);
-                printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+3);
-                printSpecificIndent("Parameter Types:", indentLevel+2);
-                indentLevel += 3;
-                printNames(c.getParameterTypes());
-                indentLevel -= 3;
-            });
+            Arrays.stream(constructors).forEach(this::printConstructor);
         }
         indentLevel--;
         print("Declared Methods: ");
@@ -116,19 +108,21 @@ public class Inspector {
         }
         indentLevel++;
         if (!isEmpty(inheritedConstructors)) {
-            inheritedConstructors.forEach(c -> {
-                printSpecificIndent("Constructor: %s", indentLevel+1, c.getName());
-                printSpecificIndent("Modifiers:", indentLevel+2);
-                printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+3);
-                printSpecificIndent("Parameter Types:", indentLevel+2);
-                indentLevel += 3;
-                printNames(c.getParameterTypes());
-                indentLevel -= 3;
-            });
+            inheritedConstructors.forEach(this::printConstructor);
         }
         indentLevel--;
         // now do same inheritance for methods, and then fields
         // is there a ned to traverse interface inheritance hierarchy???
+    }
+
+    private void printConstructor(Constructor c) {
+        printSpecificIndent("Constructor: %s", indentLevel, c.getName());
+        printSpecificIndent("Modifiers:", indentLevel+1);
+        printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+2);
+        printSpecificIndent("Parameter Types:", indentLevel+1);
+        indentLevel += 2;
+        printNames(c.getParameterTypes());
+        indentLevel -= 2;
     }
 
     private void printObjectValue(Object value) {
@@ -205,5 +199,11 @@ public class Inspector {
             indentStringBuilder.append('\t');
         }
         return indentStringBuilder.toString();
+    }
+
+    private void indentAndExecute(int indentAmount, Runnable action) {
+        indentLevel += indentAmount;
+        action.run();
+        indentLevel -= indentAmount;
     }
 }

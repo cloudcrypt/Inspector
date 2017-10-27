@@ -6,9 +6,9 @@ public class Driver {
     public static void main(String[] args) {
         Inspector inspector = new Inspector();
         try {
-            inspector.inspect(new ClassD(), true);
+            inspector.inspect(new ClassB(), true);
         } catch (Exception e) {
-            throw e;
+            throw new RuntimeException();
         }
     }
 }
