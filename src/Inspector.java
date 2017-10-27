@@ -72,9 +72,7 @@ public class Inspector {
         printSpecificIndent("Modifiers:", indentLevel+1);
         printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+2);
         printSpecificIndent("Parameter Types:", indentLevel+1);
-        indentLevel += 2;
-        printNames(c.getParameterTypes());
-        indentLevel -= 2;
+        indentAndExecute(2, () -> printNames(c.getParameterTypes()));
     }
 
     private void printMethod(Method m) {
@@ -84,13 +82,9 @@ public class Inspector {
         printSpecificIndent("Return Type: ", indentLevel+1);
         printSpecificIndent(m.getReturnType().getName(), indentLevel+2);
         printSpecificIndent("Parameter Types: ", indentLevel+1);
-        indentLevel += 2;
-        printNames(m.getParameterTypes());
-        indentLevel -= 2;
+        indentAndExecute(2, () -> printNames(m.getParameterTypes()));
         printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
-        indentLevel += 2;
-        printNames(m.getExceptionTypes());
-        indentLevel -= 2;
+        indentAndExecute(2, () -> printNames(m.getExceptionTypes()));
     }
 
     private void printField(Field f) {
@@ -109,9 +103,7 @@ public class Inspector {
         f.setAccessible(true);
         try {
             Object value = f.get(obj);
-            indentLevel += 2;
-            printObjectValue(value);
-            indentLevel -= 2;
+            indentAndExecute(2, () -> printObjectValue(value));
         } catch (IllegalAccessException e) { }
     }
 
@@ -121,7 +113,7 @@ public class Inspector {
             return;
         }
         Class cls = value.getClass();
-        if (isPrimitiveorWrapper(cls)) {
+        if (isPrimitiveOrWrapper(cls)) {
             print(value.toString());
         } else if (cls.isArray()) {
             print("Length: %s", Array.getLength(value));
@@ -129,19 +121,17 @@ public class Inspector {
             for (int i = 0; i < Array.getLength(value); i++) {
                 Object element = Array.get(value, i);
                 printSpecificIndent("Value:", indentLevel+1);
-                indentLevel += 2;
-                printObjectValue(element);
-                indentLevel -= 2;
+                indentAndExecute(2, () -> printObjectValue(element));
             }
         } else {
 //            if (recursive) {
-//
+//                  add value to queue
 //            }
             print("Reference Value: %s %s", value.toString(), System.identityHashCode(value));
         }
     }
 
-    private boolean isPrimitiveorWrapper(Class<?> type) {
+    private boolean isPrimitiveOrWrapper(Class<?> type) {
         return type.isPrimitive() || (type == Double.class || type == Float.class || type == Long.class ||
                 type == Integer.class || type == Short.class || type == Character.class ||
                 type == Byte.class || type == Boolean.class);
