@@ -19,4 +19,5 @@ public class ClassB extends ClassC implements Runnable
     private ClassA val = new ClassA();
     private ClassA val2 = new ClassA(12);
     private ClassA val3;
+    private String test = "HELLO WORLD!";
 }

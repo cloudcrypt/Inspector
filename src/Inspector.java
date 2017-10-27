@@ -20,75 +20,91 @@ public class Inspector {
         System.out.println("---------------------------------------");
         this.recursive = recursive;
         queue.add(obj);
-        //while blah blah
-        // Object next = queue.remove first one
-        this.obj = obj;
-        print("Inspecting object: %s %s\n", obj.toString(), System.identityHashCode(obj));
-        Class cls = obj.getClass();
-        print("Class: %s", cls.getName());
-        print("Immediate Superclass: %s", cls.getSuperclass().getName());
-        print("Implemented Interfaces: ");
-        indentAndExecute(1, () -> printNames(cls.getInterfaces()));
-        print("Declared Constructors:");
-        Constructor[] constructors = cls.getDeclaredConstructors();
-        indentLevel++;
-        if (!isEmpty(constructors)) {
-            Arrays.stream(constructors).forEach(this::printConstructor);
+        while (!queue.isEmpty()) {
+            this.obj = queue.remove(0);
+            Class cls = this.obj.getClass();
+            print("Inspecting object: %s %s\n", cls.getName(), System.identityHashCode(this.obj));
+            print("Class: %s", cls.getName());
+            print("Immediate Superclass: %s", cls.getSuperclass().getName());
+            print("Implemented Interfaces: ");
+            indentAndExecute(1, () -> printNames(cls.getInterfaces()));
+            print("Declared Constructors:");
+            Constructor[] constructors = cls.getDeclaredConstructors();
+            indentLevel++;
+            if (!isEmpty(constructors)) {
+                Arrays.stream(constructors).forEach(this::printConstructor);
+            }
+            indentLevel--;
+            print("Declared Methods: ");
+            Method[] methods = cls.getDeclaredMethods();
+            indentLevel++;
+            if (!isEmpty(methods)) {
+                Arrays.stream(methods).forEach(this::printMethod);
+            }
+            indentLevel--;
+            print("Declared Fields:");
+            Field[] fields = cls.getDeclaredFields();
+            indentLevel++;
+            if (!isEmpty(fields)) {
+                Arrays.stream(fields).forEach(this::printField);
+            }
+            indentLevel--;
+            print("Inherited Constructors:");
+            ArrayList<Constructor> inheritedConstructors = new ArrayList<>();
+            Class superClass = cls.getSuperclass();
+            while (superClass != null) {
+                inheritedConstructors.addAll(Arrays.asList(superClass.getDeclaredConstructors()));
+                superClass = superClass.getSuperclass();
+            }
+            indentLevel++;
+            if (!isEmpty(inheritedConstructors)) {
+                inheritedConstructors.forEach(this::printConstructor);
+            }
+            indentLevel--;
+            print("Inherited Methods:");
+            ArrayList<Method> inheritedMethods = new ArrayList<>();
+            superClass = cls.getSuperclass();
+            while (superClass != null) {
+                inheritedMethods.addAll(Arrays.asList(superClass.getDeclaredMethods()));
+                superClass = superClass.getSuperclass();
+            }
+            indentLevel++;
+            if (!isEmpty(inheritedMethods)) {
+                inheritedMethods.forEach(this::printMethod);
+            }
+            indentLevel--;
+            print("Inherited Fields:");
+            ArrayList<Field> inheritedFields = new ArrayList<>();
+            superClass = cls.getSuperclass();
+            while (superClass != null) {
+                inheritedFields.addAll(Arrays.asList(superClass.getDeclaredFields()));
+                superClass = superClass.getSuperclass();
+            }
+            indentLevel++;
+            if (!isEmpty(inheritedFields)) {
+                inheritedFields.forEach(this::printField);
+            }
+            indentLevel--;
+            print("Inherited Interfaces:");
+            ArrayList<Class> inheritedInterfaces = new ArrayList<>();
+            ArrayList<Class> superInterfaces = new ArrayList<>();
+            Class[] interfaces = cls.getInterfaces();
+            for (Class i : interfaces) {
+                superInterfaces.addAll(Arrays.asList(i.getInterfaces()));
+            }
+            superClass = cls.getSuperclass();
+            while (superClass != null)  {
+                superInterfaces.addAll(Arrays.asList(superClass.getInterfaces()));
+                superClass = superClass.getSuperclass();
+            }
+            while (superInterfaces.size() > 0) {
+                Class i = superInterfaces.remove(0);
+                inheritedInterfaces.add(i);
+                superInterfaces.addAll(Arrays.asList(i.getInterfaces()));
+            }
+            indentAndExecute(1, () -> printNames(inheritedInterfaces.toArray(new Class[0])));;
+            System.out.println("---------------------------------------\n");
         }
-        indentLevel--;
-        print("Declared Methods: ");
-        Method[] methods = cls.getDeclaredMethods();
-        indentLevel++;
-        if (!isEmpty(methods)) {
-            Arrays.stream(methods).forEach(this::printMethod);
-        }
-        indentLevel--;
-        print("Declared Fields:");
-        Field[] fields = cls.getDeclaredFields();
-        indentLevel++;
-        if (!isEmpty(fields)) {
-            Arrays.stream(fields).forEach(this::printField);
-        }
-        indentLevel--;
-        print("Inherited Constructors:");
-        ArrayList<Constructor> inheritedConstructors = new ArrayList<>();
-        Class superClass = cls.getSuperclass();
-        while (superClass != null) {
-            inheritedConstructors.addAll(Arrays.asList(superClass.getDeclaredConstructors()));
-            superClass = superClass.getSuperclass();
-        }
-        indentLevel++;
-        if (!isEmpty(inheritedConstructors)) {
-            inheritedConstructors.forEach(this::printConstructor);
-        }
-        indentLevel--;
-        print("Inherited Methods:");
-        ArrayList<Method> inheritedMethods = new ArrayList<>();
-        superClass = cls.getSuperclass();
-        while (superClass != null) {
-            inheritedMethods.addAll(Arrays.asList(superClass.getDeclaredMethods()));
-            superClass = superClass.getSuperclass();
-        }
-        indentLevel++;
-        if (!isEmpty(inheritedMethods)) {
-            inheritedMethods.forEach(this::printMethod);
-        }
-        indentLevel--;
-        print("Inherited Fields:");
-        ArrayList<Field> inheritedFields = new ArrayList<>();
-        superClass = cls.getSuperclass();
-        while (superClass != null) {
-            inheritedFields.addAll(Arrays.asList(superClass.getDeclaredFields()));
-            superClass = superClass.getSuperclass();
-        }
-        indentLevel++;
-        if (!isEmpty(inheritedFields)) {
-            inheritedFields.forEach(this::printField);
-        }
-        indentLevel--;
-        System.out.println("---------------------------------------\n");
-        // now do same inheritance for methods, and then fields
-        // is there a ned to traverse interface inheritance hierarchy???
     }
 
     private void printConstructor(Constructor c) {
@@ -104,7 +120,7 @@ public class Inspector {
         printSpecificIndent("Modifiers: ", indentLevel+1);
         printSpecificIndent(Modifier.toString(m.getModifiers()), indentLevel+2);
         printSpecificIndent("Return Type: ", indentLevel+1);
-        printSpecificIndent(m.getReturnType().getName(), indentLevel+2);
+        indentAndExecute(2, () -> printType(m.getReturnType()));
         printSpecificIndent("Parameter Types: ", indentLevel+1);
         indentAndExecute(2, () -> printNames(m.getParameterTypes()));
         printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
@@ -148,10 +164,20 @@ public class Inspector {
                 indentAndExecute(2, () -> printObjectValue(element));
             }
         } else {
-//            if (recursive) {
-//                  add value to queue
-//            }
-            print("Reference Value: %s %s", value.toString(), System.identityHashCode(value));
+            print("Reference Value: %s %s", value.getClass().getName(), System.identityHashCode(value));
+            if (recursive) {
+                  if (!queue.contains(value)) {
+                      queue.add(value);
+                  }
+            }
+        }
+    }
+
+    private void printType(Class type) {
+        if (!type.isArray()) {
+            print(type.getName());
+        } else {
+            print("Array of type %s", type.getComponentType().getName());
         }
     }
 
@@ -163,7 +189,7 @@ public class Inspector {
 
     private void printNames(Class[] list) {
         if (!isEmpty(list)) {
-            Arrays.stream(list).forEach(c -> print(c.getName()));
+            Arrays.stream(list).forEach(this::printType);
         }
     }
 
