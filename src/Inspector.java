@@ -1,4 +1,6 @@
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 public class Inspector {
@@ -26,8 +28,35 @@ public class Inspector {
                 indentLevel += 2;
                 printNames(m.getExceptionTypes());
                 indentLevel -= 2;
+                printSpecificIndent("Parameter Types: ", indentLevel+1);
+                indentLevel += 2;
+                printNames(m.getParameterTypes());
+                indentLevel -= 2;
+                printSpecificIndent("Return Type: ", indentLevel+1);
+                printSpecificIndent(m.getReturnType().getName(), indentLevel+2);
+                printSpecificIndent("Modifiers: ", indentLevel+1);
+                printSpecificIndent(Modifier.toString(m.getModifiers()), indentLevel+2);
             });
         }
+        indentLevel--;
+        print("Declared Constructors:");
+        Constructor[] constructors = cls.getDeclaredConstructors();
+        indentLevel++;
+        if (!isEmpty(constructors)) {
+            Arrays.stream(constructors).forEach(c -> {
+               printSpecificIndent("Constructor:", indentLevel+1);
+               printSpecificIndent("Parameter Types:", indentLevel+2);
+               indentLevel += 3;
+               printNames(c.getParameterTypes());
+               indentLevel -= 3;
+               printSpecificIndent("Modifiers:", indentLevel+2);
+               printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+3);
+            });
+        }
+        indentLevel--;
+        print("Declared Fields:");
+        indentLevel++;
+
         indentLevel--;
     }
 
