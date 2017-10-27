@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class InspectorTest {
     @Test
@@ -27,8 +28,39 @@ public class InspectorTest {
                 "Method: setVal",
                 "Method: getVal",
                 "Method: printSomething",
-                "java.lang.Exception"
+                "java.lang.Exception",
+                "Field: val",
+                "Field: val2",
+                "Field: val3"
         };
         Arrays.stream(outputValues).forEach(s -> assertTrue(outStream.toString().contains(s)));
+    }
+
+    @Test
+    public void testClassB() {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outStream));
+        try {
+            ClassB cls = new ClassB();
+            Inspector inspector = new Inspector();
+            inspector.inspect(cls, false);
+            String[] outputValues = new String[]{
+                    "Class: TestDriver.ClassB",
+                    "Immediate Superclass: TestDriver.ClassC",
+                    "Implemented Interfaces: \n" +
+                            "\tjava.lang.Runnable",
+                    "Method: run",
+                    "Method: toString",
+                    "Return Type: \n\t\t\tjava.lang.String",
+                    "Method: func3",
+                    "Constructor:\n\t\t\tParameter Types:\n\t\t\t\tNone\n\t\t\tModifiers:\n\t\t\t\tpublic",
+                    "Field: val",
+                    "Field: val2",
+                    "Field: val3"
+            };
+            Arrays.stream(outputValues).forEach(s -> assertTrue(outStream.toString().contains(s)));
+        } catch (Exception e) {
+            fail(e);
+        }
     }
 }
