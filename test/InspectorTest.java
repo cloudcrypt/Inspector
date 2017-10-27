@@ -53,7 +53,7 @@ public class InspectorTest {
                     "Method: toString",
                     "Return Type: \n\t\t\tjava.lang.String",
                     "Method: func3",
-                    "Constructor:\n\t\t\tParameter Types:\n\t\t\t\tNone\n\t\t\tModifiers:\n\t\t\t\tpublic",
+                    "Constructor: TestDriver.ClassB\n\t\t\tModifiers:\n\t\t\t\tpublic\n\t\t\tParameter Types:\n\t\t\t\tNone",
                     "Field: val",
                     "Field: val2",
                     "Field: val3"

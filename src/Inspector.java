@@ -2,6 +2,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Inspector {
@@ -19,39 +20,39 @@ public class Inspector {
         indentLevel++;
         printNames(cls.getInterfaces());
         indentLevel--;
+        print("Declared Constructors:");
+        Constructor[] constructors = cls.getDeclaredConstructors();
+        indentLevel++;
+        if (!isEmpty(constructors)) {
+            Arrays.stream(constructors).forEach(c -> {
+                printSpecificIndent("Constructor: %s", indentLevel+1, c.getName());
+                printSpecificIndent("Modifiers:", indentLevel+2);
+                printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+3);
+                printSpecificIndent("Parameter Types:", indentLevel+2);
+                indentLevel += 3;
+                printNames(c.getParameterTypes());
+                indentLevel -= 3;
+            });
+        }
+        indentLevel--;
         print("Declared Methods: ");
         Method[] methods = cls.getDeclaredMethods();
         indentLevel++;
         if (!isEmpty(methods)) {
             Arrays.stream(methods).forEach(m -> {
                 print("Method: %s", m.getName());
-                printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
-                indentLevel += 2;
-                printNames(m.getExceptionTypes());
-                indentLevel -= 2;
+                printSpecificIndent("Modifiers: ", indentLevel+1);
+                printSpecificIndent(Modifier.toString(m.getModifiers()), indentLevel+2);
+                printSpecificIndent("Return Type: ", indentLevel+1);
+                printSpecificIndent(m.getReturnType().getName(), indentLevel+2);
                 printSpecificIndent("Parameter Types: ", indentLevel+1);
                 indentLevel += 2;
                 printNames(m.getParameterTypes());
                 indentLevel -= 2;
-                printSpecificIndent("Return Type: ", indentLevel+1);
-                printSpecificIndent(m.getReturnType().getName(), indentLevel+2);
-                printSpecificIndent("Modifiers: ", indentLevel+1);
-                printSpecificIndent(Modifier.toString(m.getModifiers()), indentLevel+2);
-            });
-        }
-        indentLevel--;
-        print("Declared Constructors:");
-        Constructor[] constructors = cls.getDeclaredConstructors();
-        indentLevel++;
-        if (!isEmpty(constructors)) {
-            Arrays.stream(constructors).forEach(c -> {
-               printSpecificIndent("Constructor:", indentLevel+1);
-               printSpecificIndent("Parameter Types:", indentLevel+2);
-               indentLevel += 3;
-               printNames(c.getParameterTypes());
-               indentLevel -= 3;
-               printSpecificIndent("Modifiers:", indentLevel+2);
-               printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+3);
+                printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
+                indentLevel += 2;
+                printNames(m.getExceptionTypes());
+                indentLevel -= 2;
             });
         }
         indentLevel--;
@@ -61,10 +62,10 @@ public class Inspector {
         if (!isEmpty(fields)) {
             Arrays.stream(fields).forEach(f -> {
                 print("Field: %s", f.getName());
-                printSpecificIndent("Type:", indentLevel+1);
-                printSpecificIndent(f.getType().getName(), indentLevel+2);
                 printSpecificIndent("Modifiers:", indentLevel+1);
                 printSpecificIndent(Modifier.toString(f.getModifiers()), indentLevel+2);
+                printSpecificIndent("Type:", indentLevel+1);
+                printSpecificIndent(f.getType().getName(), indentLevel+2);
                 printSpecificIndent("Value:", indentLevel+1);
                 f.setAccessible(true);
                 try {
@@ -83,8 +84,26 @@ public class Inspector {
             });
         }
         indentLevel--;
-        //print("Inherited Constructors:");
-
+        print("Inherited Constructors:");
+        ArrayList<Constructor> inheritedConstructors = new ArrayList<>();
+        Class superClass = cls.getSuperclass();
+        while (superClass != null) {
+            inheritedConstructors.addAll(Arrays.asList(superClass.getDeclaredConstructors()));
+            superClass = superClass.getSuperclass();
+        }
+        indentLevel++;
+        if (!isEmpty(inheritedConstructors)) {
+            inheritedConstructors.forEach(c -> {
+                printSpecificIndent("Constructor: %s", indentLevel+1, c.getName());
+                printSpecificIndent("Modifiers:", indentLevel+2);
+                printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+3);
+                printSpecificIndent("Parameter Types:", indentLevel+2);
+                indentLevel += 3;
+                printNames(c.getParameterTypes());
+                indentLevel -= 3;
+            });
+        }
+        indentLevel--;
     }
 
     private void printNames(Class[] list) {
@@ -95,6 +114,12 @@ public class Inspector {
 
     private <T> boolean isEmpty(T[] list) {
         boolean empty = list.length == 0;
+        if (empty) print("None");
+        return empty;
+    }
+
+    private <T> boolean isEmpty(ArrayList<T> list) {
+        boolean empty = list.size() == 0;
         if (empty) print("None");
         return empty;
     }
