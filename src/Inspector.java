@@ -8,6 +8,8 @@ public class Inspector {
 
     private ArrayList<Object> queue;
 
+    private Object obj;
+
     private boolean recursive;
 
     public Inspector() {
@@ -15,8 +17,11 @@ public class Inspector {
     }
 
     public void inspect(Object obj, boolean recursive) {
-        queue.add(obj);
         this.recursive = recursive;
+        queue.add(obj);
+        //while blah blah
+        // Object next = queue.remove first one
+        this.obj = obj;
         print("Inspecting object: %s %s\n", obj.toString(), System.identityHashCode(obj));
         Class cls = obj.getClass();
         print("Class: %s", cls.getName());
@@ -36,67 +41,14 @@ public class Inspector {
         Method[] methods = cls.getDeclaredMethods();
         indentLevel++;
         if (!isEmpty(methods)) {
-            Arrays.stream(methods).forEach(m -> {
-                print("Method: %s", m.getName());
-                printSpecificIndent("Modifiers: ", indentLevel+1);
-                printSpecificIndent(Modifier.toString(m.getModifiers()), indentLevel+2);
-                printSpecificIndent("Return Type: ", indentLevel+1);
-                printSpecificIndent(m.getReturnType().getName(), indentLevel+2);
-                printSpecificIndent("Parameter Types: ", indentLevel+1);
-                indentLevel += 2;
-                printNames(m.getParameterTypes());
-                indentLevel -= 2;
-                printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
-                indentLevel += 2;
-                printNames(m.getExceptionTypes());
-                indentLevel -= 2;
-            });
+            Arrays.stream(methods).forEach(this::printMethod);
         }
         indentLevel--;
         print("Declared Fields:");
         Field[] fields = cls.getDeclaredFields();
         indentLevel++;
         if (!isEmpty(fields)) {
-            Arrays.stream(fields).forEach(f -> {
-                print("Field: %s", f.getName());
-                printSpecificIndent("Modifiers:", indentLevel+1);
-                printSpecificIndent(Modifier.toString(f.getModifiers()), indentLevel+2);
-                printSpecificIndent("Type:", indentLevel+1);
-                if (!f.getType().isArray()) {
-                    printSpecificIndent(f.getType().getName(), indentLevel+2);
-                } else {
-                    printSpecificIndent("Array", indentLevel+2);
-                    printSpecificIndent("Component Type:", indentLevel+1);
-                    printSpecificIndent(f.getType().getComponentType().getName(), indentLevel+2);
-                }
-                printSpecificIndent("Value:", indentLevel+1);
-                f.setAccessible(true);
-                try {
-                    Object value = f.get(obj);
-                    ////// printObjectValue start
-                    if (value == null) {
-                        printSpecificIndent("null", indentLevel+2);
-                    } else if (f.getType().isPrimitive()) {
-                        printSpecificIndent(value.toString(), indentLevel + 2);
-                    } else if (f.getType().isArray()) {
-                        printSpecificIndent("Length: %s", indentLevel+2, Array.getLength(value));
-                        printSpecificIndent("Contents:", indentLevel+2);
-                        for (int i = 0; i < Array.getLength(value); i++) {
-                            Object element = Array.get(value, i);
-                            printSpecificIndent("Value:", indentLevel+3);
-                            indentLevel += 4;
-                            printObjectValue(element);
-                            indentLevel -= 4;
-                        }
-                    } else {
-                        if (recursive) {
-
-                        }
-                        printSpecificIndent("Reference Value: %s %s", indentLevel+2, value.toString(), System.identityHashCode(value));
-                    }
-                    /// printObjectValue end
-                } catch (IllegalAccessException e) { }
-            });
+            Arrays.stream(fields).forEach(this::printField);
         }
         indentLevel--;
         print("Inherited Constructors:");
@@ -116,13 +68,51 @@ public class Inspector {
     }
 
     private void printConstructor(Constructor c) {
-        printSpecificIndent("Constructor: %s", indentLevel, c.getName());
+        print("Constructor: %s", c.getName());
         printSpecificIndent("Modifiers:", indentLevel+1);
         printSpecificIndent(Modifier.toString(c.getModifiers()), indentLevel+2);
         printSpecificIndent("Parameter Types:", indentLevel+1);
         indentLevel += 2;
         printNames(c.getParameterTypes());
         indentLevel -= 2;
+    }
+
+    private void printMethod(Method m) {
+        print("Method: %s", m.getName());
+        printSpecificIndent("Modifiers: ", indentLevel+1);
+        printSpecificIndent(Modifier.toString(m.getModifiers()), indentLevel+2);
+        printSpecificIndent("Return Type: ", indentLevel+1);
+        printSpecificIndent(m.getReturnType().getName(), indentLevel+2);
+        printSpecificIndent("Parameter Types: ", indentLevel+1);
+        indentLevel += 2;
+        printNames(m.getParameterTypes());
+        indentLevel -= 2;
+        printSpecificIndent("Exceptions Thrown: ", indentLevel+1);
+        indentLevel += 2;
+        printNames(m.getExceptionTypes());
+        indentLevel -= 2;
+    }
+
+    private void printField(Field f) {
+        print("Field: %s", f.getName());
+        printSpecificIndent("Modifiers:", indentLevel+1);
+        printSpecificIndent(Modifier.toString(f.getModifiers()), indentLevel+2);
+        printSpecificIndent("Type:", indentLevel+1);
+        if (!f.getType().isArray()) {
+            printSpecificIndent(f.getType().getName(), indentLevel+2);
+        } else {
+            printSpecificIndent("Array", indentLevel+2);
+            printSpecificIndent("Component Type:", indentLevel+1);
+            printSpecificIndent(f.getType().getComponentType().getName(), indentLevel+2);
+        }
+        printSpecificIndent("Value:", indentLevel+1);
+        f.setAccessible(true);
+        try {
+            Object value = f.get(obj);
+            indentLevel += 2;
+            printObjectValue(value);
+            indentLevel -= 2;
+        } catch (IllegalAccessException e) { }
     }
 
     private void printObjectValue(Object value) {
@@ -147,7 +137,7 @@ public class Inspector {
 //            if (recursive) {
 //
 //            }
-            printSpecificIndent("Reference Value: %s %s", indentLevel+2, value.toString(), System.identityHashCode(value));
+            print("Reference Value: %s %s", value.toString(), System.identityHashCode(value));
         }
     }
 
