@@ -1,8 +1,6 @@
 /*
- *  
- *  
+ * Inspector
  * Daniel Dastoor
- *  
  */
 
 import java.lang.reflect.*;

@@ -1,8 +1,6 @@
 /*
- *  
- *  
+ * InspectorTest
  * Daniel Dastoor
- *  
  */
 
 import TestDriver.*;
